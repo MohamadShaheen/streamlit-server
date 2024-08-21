@@ -27,8 +27,36 @@ def store_baby_names():
                     'baby_name': baby_name,
                     'gender': gender
                 })
-        collection.insert_many(baby_names_to_insert)
+        if len(baby_names_to_insert) > 0:
+            collection.insert_many(baby_names_to_insert)
 
         return baby_names
     else:
         raise HTTPException(status_code=response.status_code, detail=response.text)
+
+def retrieve_baby_names(gender: str = None, num_of_baby_names: int = None):
+    gender = gender.lower()
+    if gender == 'both':
+        gender = None
+
+    if gender:
+        if gender != 'boy' and gender != 'girl':
+            raise HTTPException(status_code=400, detail="Gender must be 'boy' or 'girl'")
+        db_baby_names = collection.find({'gender': gender}, {'_id': 0, 'gender': 0})
+    else:
+        db_baby_names = collection.find({}, {'_id': 0, 'gender': 0})
+
+    if not db_baby_names:
+        raise HTTPException(status_code=404, detail='No baby names found')
+
+    baby_names_list = [db_baby_name['baby_name'] for db_baby_name in db_baby_names]
+    if num_of_baby_names:
+        if num_of_baby_names == 0 or len(baby_names_list) < num_of_baby_names:
+            return baby_names_list
+        else:
+            return random.sample(baby_names_list, num_of_baby_names)
+    else:
+        if len(baby_names_list) < 300:
+            return baby_names_list
+        else:
+            return random.sample(baby_names_list, 300)

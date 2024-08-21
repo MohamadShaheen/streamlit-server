@@ -15,3 +15,14 @@ async def store_baby_names(request: Request):
     except Exception as e:
         logging.error(e)
         raise e
+
+@router.get('/retrieve-baby-names/')
+async def retrieve_baby_names(request: Request, gender: str = None, num_of_baby_names: int = None):
+    logging.info(f'Accessing {request.url}')
+    try:
+        baby_names = baby_names_dal.retrieve_baby_names(gender, num_of_baby_names)
+        logging.info('Baby names retrieved')
+        return baby_names
+    except Exception as e:
+        logging.error(e)
+        raise e
